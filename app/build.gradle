@@ -14,6 +14,19 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild{
+            cmake{
+                // 指定编译架构
+                abiFilters 'arm64-v8a','armeabi-v7a','x86','x86_64'
+            }
+        }
+    }
+
+    externalNativeBuild{
+        cmake{
+            // 在该文件种设置所要编写的c源码位置，以及编译后so文件的名字
+            path 'CMakeLists.txt'
+        }
     }
 
     buildTypes {
