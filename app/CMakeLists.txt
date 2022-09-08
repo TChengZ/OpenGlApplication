@@ -35,6 +35,7 @@ target_link_libraries( # Specifies the target library.
             OpenGLUI
             android # 保证能编译过ANativeWindow_fromSurface
             EGL #编译过相关egl接口
+            GLESv2 #编译过相关gl接口
             # Links the target library to the log library
             # included in the NDK.
             ${log-lib} )

@@ -1,5 +1,6 @@
 package com.jc.openglapplication.nativeFunc;
 
+
 import android.view.Surface;
 
 public class OpenGLClass {
