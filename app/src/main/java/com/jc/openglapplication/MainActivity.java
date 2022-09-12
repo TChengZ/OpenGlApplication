@@ -43,7 +43,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback2{
 
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-
+        OpenGLClass.getInstance().onSurfaceDestroyNative();
     }
 
     @Override

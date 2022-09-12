@@ -9,14 +9,15 @@
 #include <EGL/egl.h>
 #include <GLES/gl.h>
 #include <android/log.h>
-#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "auto_encrypt", __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "opengl_test", __VA_ARGS__))
 
 #define JNI_CURRENT_VERSION JNI_VERSION_1_4
 
 JavaVM* gGlobalVM = NULL;
+ANativeWindow* m_CurrentNativeWindow;
 
 extern "C" void onSurfaceCreate(JNIEnv *env, jobject clazz, jobject surface) {
-    ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
+    m_CurrentNativeWindow = ANativeWindow_fromSurface(env, surface);
     EGLDisplay eglDisplay; /**< 系统显示 ID 或句柄。 */
     EGLSurface eglSurface; /**< 系统窗口或 frame buffer 句柄。 */
     EGLContext eglContext; /**< OpenGL ES 图形上下文。 */
@@ -29,13 +30,14 @@ extern "C" void onSurfaceCreate(JNIEnv *env, jobject clazz, jobject surface) {
             EGL_BLUE_SIZE, 8,
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE
     };
-    if (EGL_TRUE != eglChooseConfig(eglDisplay, configSpec, &eglConfig, 1, &eglConfigNum)) // 获取 EGLConfig 对象，确定渲染表面的配置信息
+    int initConfig = eglChooseConfig(eglDisplay, configSpec, &eglConfig, 1, &eglConfigNum);
+    if (EGL_TRUE != initConfig) // 获取 EGLConfig 对象，确定渲染表面的配置信息
     {
         LOGD("eglChooseConfig failed!");
         return;
     }
 
-    eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, nativeWindow, NULL); // 创建渲染表面 EGLSurface
+    eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, m_CurrentNativeWindow, NULL); // 创建渲染表面 EGLSurface
 
     const EGLint ctxAttr[] = {
             EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
@@ -54,12 +56,24 @@ extern "C" void onSurfaceCreate(JNIEnv *env, jobject clazz, jobject surface) {
     // 交换缓冲
     eglSwapBuffers(eglDisplay, eglSurface);
 }
+
+extern "C" void onSurfaceDestroy(JNIEnv *env, jobject clazz)
+{
+    if (m_CurrentNativeWindow != NULL)
+    {
+        ANativeWindow_release(m_CurrentNativeWindow);
+        LOGD("release native window!");
+        m_CurrentNativeWindow = NULL;
+    }
+}
+
 #define METHOD_LEN(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #define javaClass "com/jc/openglapplication/nativeFunc/OpenGLClass"
 
 static const JNINativeMethod nativeMethods[] =
 {
-        { "onSurfaceCreateNative", "(Landroid/view/Surface;)V", (void*) onSurfaceCreate },
+    { "onSurfaceCreateNative", "(Landroid/view/Surface;)V", (void*) onSurfaceCreate },
+    { "onSurfaceDestroyNative", "()V", (void*) onSurfaceDestroy },
 };
 
 

@@ -26,4 +26,5 @@ public class OpenGLClass {
     }
 
     public native void onSurfaceCreateNative(Surface surface);
+    public native void onSurfaceDestroyNative();
 }
